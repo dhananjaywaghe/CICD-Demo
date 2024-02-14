@@ -1,0 +1,78 @@
+name: Build and Push from dev to staging and from staging to Production add
+ 
+on:
+  push:
+    branches:
+      - dev
+ 
+jobs:
+  build_and_push_dev_to_staging:
+    runs-on: ubuntu-latest
+ 
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+ 
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+ 
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+ 
+      - name: Start and stop Python script
+        run: |
+          python main.py &               
+          sleep 5s                      
+          pkill -f "python main.py"      
+ 
+      - name: Run Tests
+        run: | 
+          python test.py
+      - name: Push Dev to staging
+        run: |
+          git config user.email "dhananjaywaghe2@gmail.com"
+          git config user.name "Dhananjay Waghe" 
+          git config http.sslVerify false
+          git fetch origin 
+          git checkout staging
+          git merge --allow-unrelated-histories -X theirs dev
+          git push origin staging
+ 
+  raise_pull_request:
+    runs-on: ubuntu-latest
+ 
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+ 
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+ 
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+ 
+      - name: Start and stop Python script
+        run: |
+          python main.py &               
+          sleep 5s                      
+          pkill -f "python main.py"      
+ 
+      - name: Run Tests
+        run: | 
+          python test.py
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          branch: main
+          title: "Merge staging into main"
+          body: "This pull request merges changes from staging into the main branch."
+          labels: "automerge"
