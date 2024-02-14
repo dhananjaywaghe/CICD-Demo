@@ -34,8 +34,9 @@ jobs:
           python test.py
       - name: Push Dev to staging
         run: |
-          git config user.email "artitambe2602@gmail.com"
-          git config user.name "Arti Tambe"
+          git config user.email "dhananjaywaghe2@gmail.com"
+          git config user.name "Dhananjay Waghe" 
+          git config http.sslVerify false
           git fetch origin 
           git checkout staging
           git merge --allow-unrelated-histories -X theirs dev
